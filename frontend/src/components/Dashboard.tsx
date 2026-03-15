@@ -7,7 +7,7 @@ import 'react-calendar-heatmap/dist/styles.css';
 import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X, LogOut, User as UserIcon } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Set up interceptor for auth headers
 axios.interceptors.request.use((config) => {
