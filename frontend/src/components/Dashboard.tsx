@@ -154,16 +154,16 @@ export default function Dashboard() {
                 username: authUsername,
                 password: authPassword
             });
-            
+
             const { token, username } = res.data;
             localStorage.setItem('runrate_token', token);
             localStorage.setItem('runrate_user', username);
-            
+
             setToken(token);
             setCurrentUser(username);
             setAuthUsername('');
             setAuthPassword('');
-            
+
             fetchGoals(); // load goals for user
         } catch (error: any) {
             console.error(error);
@@ -198,7 +198,7 @@ export default function Dashboard() {
                 <div className="w-full max-w-sm p-8 rounded-3xl glass-panel relative overflow-hidden border border-white/5">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
-                    
+
                     <div className="text-center mb-8 relative z-10">
                         <div className="w-16 h-16 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
                             <Target size={32} />
@@ -212,29 +212,29 @@ export default function Dashboard() {
                             {authError}
                         </div>
                     )}
-                    
+
                     <form onSubmit={handleAuth} className="space-y-4 relative z-10">
                         <div>
                             <label className="block text-xs font-semibold mb-1.5 text-neutral-400 uppercase tracking-wider">Username</label>
                             <input type="text" value={authUsername} onChange={(e) => setAuthUsername(e.target.value)} required
-                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium" 
+                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium"
                                 placeholder="e.g. abhishek123" />
                         </div>
                         <div>
                             <label className="block text-xs font-semibold mb-1.5 text-neutral-400 uppercase tracking-wider">Password</label>
                             <input type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required
-                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium" 
+                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium"
                                 placeholder="••••••••" />
                         </div>
-                        
-                        <button type="submit" 
+
+                        <button type="submit"
                             className="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-3.5 rounded-xl transition-all shadow-[0_4px_20px_rgba(30,185,101,0.3)] mt-2">
                             {authMode === 'login' ? 'Enter Pitch' : 'Create Squad'}
                         </button>
                     </form>
 
                     <div className="mt-6 text-center relative z-10">
-                        <button type="button" onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }} 
+                        <button type="button" onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
                             className="text-sm font-medium text-neutral-500 hover:text-brand-400 transition-colors">
                             {authMode === 'login' ? "Don't have an account? Sign up" : "Already playing? Log in"}
                         </button>
@@ -384,6 +384,7 @@ export default function Dashboard() {
                             <div className="text-xl md:text-4xl font-black flex items-baseline">
                                 {stats.totalSolved}<span className="text-neutral-600 text-sm md:text-2xl mx-1">/</span><span className="text-neutral-400 text-sm md:text-2xl">{goal.totalQuestions}</span>
                             </div>
+                            <p className="text-[9px] md:text-[11px] text-brand-400/80 mt-1 font-medium">Balls played: {stats.daysPassed}</p>
                         </div>
 
                         {/* CRR */}
@@ -395,6 +396,7 @@ export default function Dashboard() {
                                     <TrendingUp size={16} className="text-brand-400 flex-shrink-0" /> :
                                     <TrendingUp size={16} className="text-red-400 rotate-180 flex-shrink-0" />}
                             </p>
+                            <p className="text-[9px] md:text-[11px] text-brand-400/80 mt-1 font-medium">{stats.remainingQuestions} runs needed</p>
                         </div>
 
                         {/* RRR */}
@@ -403,6 +405,7 @@ export default function Dashboard() {
                             <p className="text-xl md:text-3xl font-bold text-white flex items-center gap-1 md:gap-2">
                                 {stats.rrr}
                             </p>
+                            <p className="text-[9px] md:text-[11px] text-brand-400/80 mt-1 font-medium">Balls left: {stats.remainingDays}</p>
                         </div>
                     </div>
 
