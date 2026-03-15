@@ -20,6 +20,7 @@ exports.createGoal = async (req, res) => {
     }
 
     const goal = new Goal({
+      user: req.user.id,
       title,
       totalQuestions,
       startDate: finalStartDate,
@@ -37,7 +38,7 @@ exports.createGoal = async (req, res) => {
 // Get all goals
 exports.getGoals = async (req, res) => {
   try {
-    const goals = await Goal.find().sort({ createdAt: -1 });
+    const goals = await Goal.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.status(200).json(goals);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching goals', error: error.message });
@@ -49,6 +50,10 @@ exports.getGoalStats = async (req, res) => {
     try {
         const goal = await Goal.findById(req.params.id).lean();
         if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+        if (goal.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
 
         // Calculate metrics
         const progressEntries = await Progress.find({ goalId: goal._id }).sort({ date: 1 }).lean();
@@ -92,6 +97,13 @@ exports.getGoalStats = async (req, res) => {
 // Delete goal
 exports.deleteGoal = async (req, res) => {
     try {
+        const goal = await Goal.findById(req.params.id);
+        if (!goal) return res.status(404).json({ message: 'Goal not found' });
+        
+        if (goal.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         await Goal.findByIdAndDelete(req.params.id);
         await Progress.deleteMany({ goalId: req.params.id });
         res.status(200).json({ message: 'Goal and associated progress deleted' });
@@ -107,6 +119,10 @@ exports.updateGoal = async (req, res) => {
         const goal = await Goal.findById(req.params.id);
         
         if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+        if (goal.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
 
         if (title) goal.title = title;
         if (totalQuestions) goal.totalQuestions = totalQuestions;

@@ -7,6 +7,7 @@ const app = express();
 
 const goalRoutes = require('./routes/goalRoutes');
 const progressRoutes = require('./routes/progressRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Middleware
 app.use(cors());
@@ -15,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use('/api/goals', goalRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/auth', authRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

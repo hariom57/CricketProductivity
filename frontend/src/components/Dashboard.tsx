@@ -4,10 +4,19 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X } from 'lucide-react';
+import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X, LogOut, User as UserIcon } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
 
 const API_URL = 'http://localhost:5000/api';
+
+// Set up interceptor for auth headers
+axios.interceptors.request.use((config) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('runrate_token') : null;
+    if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
 export default function Dashboard() {
     const [goal, setGoal] = useState<any>(null);
@@ -26,12 +35,30 @@ export default function Dashboard() {
 
     const [questionsSolved, setQuestionsSolved] = useState(0);
 
+    // Auth state
+    const [token, setToken] = useState<string | null>(null);
+    const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+    const [authUsername, setAuthUsername] = useState('');
+    const [authPassword, setAuthPassword] = useState('');
+    const [authError, setAuthError] = useState('');
+    const [currentUser, setCurrentUser] = useState<string | null>(null);
+
     useEffect(() => {
-        fetchGoals();
+        // Hydrate token on mount
+        const storedToken = localStorage.getItem('runrate_token');
+        const storedUser = localStorage.getItem('runrate_user');
+        if (storedToken) {
+            setToken(storedToken);
+            setCurrentUser(storedUser);
+            fetchGoals();
+        } else {
+            setLoading(false);
+        }
     }, []);
 
     const fetchGoals = async () => {
         try {
+            setLoading(true);
             const res = await axios.get(`${API_URL}/goals`);
             if (res.data.length > 0) {
                 const latestGoal = res.data[0];
@@ -40,9 +67,10 @@ export default function Dashboard() {
                 setLoading(false);
                 setShowGoalForm(true);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             setLoading(false);
+            if (error.response?.status === 401) handleLogout();
         }
     };
 
@@ -116,11 +144,101 @@ export default function Dashboard() {
         }
     };
 
+    const handleAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAuthError('');
+        try {
+            setLoading(true);
+            const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+            const res = await axios.post(`${API_URL}${endpoint}`, {
+                username: authUsername,
+                password: authPassword
+            });
+            
+            const { token, username } = res.data;
+            localStorage.setItem('runrate_token', token);
+            localStorage.setItem('runrate_user', username);
+            
+            setToken(token);
+            setCurrentUser(username);
+            setAuthUsername('');
+            setAuthPassword('');
+            
+            fetchGoals(); // load goals for user
+        } catch (error: any) {
+            console.error(error);
+            setLoading(false);
+            setAuthError(error.response?.data?.message || 'Authentication failed. Please try again.');
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('runrate_token');
+        localStorage.removeItem('runrate_user');
+        setToken(null);
+        setCurrentUser(null);
+        setGoal(null);
+        setHeatmapData([]);
+        setShowGoalForm(false);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
                 <div className="animate-spin text-brand-400">
                     <RefreshCw size={40} />
+                </div>
+            </div>
+        );
+    }
+
+    if (!token) {
+        return (
+            <div className="min-h-screen bg-neutral-950 text-neutral-100 p-6 flex flex-col items-center justify-center font-sans">
+                <div className="w-full max-w-sm p-8 rounded-3xl glass-panel relative overflow-hidden border border-white/5">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
+                    
+                    <div className="text-center mb-8 relative z-10">
+                        <div className="w-16 h-16 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
+                            <Target size={32} />
+                        </div>
+                        <h2 className="text-3xl font-black tracking-tight mb-2">RunRate</h2>
+                        <p className="text-neutral-400 text-sm">Join the match. Track your grind.</p>
+                    </div>
+
+                    {authError && (
+                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg mb-6 text-center">
+                            {authError}
+                        </div>
+                    )}
+                    
+                    <form onSubmit={handleAuth} className="space-y-4 relative z-10">
+                        <div>
+                            <label className="block text-xs font-semibold mb-1.5 text-neutral-400 uppercase tracking-wider">Username</label>
+                            <input type="text" value={authUsername} onChange={(e) => setAuthUsername(e.target.value)} required
+                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium" 
+                                placeholder="e.g. abhishek123" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold mb-1.5 text-neutral-400 uppercase tracking-wider">Password</label>
+                            <input type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} required
+                                className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all font-medium" 
+                                placeholder="••••••••" />
+                        </div>
+                        
+                        <button type="submit" 
+                            className="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-3.5 rounded-xl transition-all shadow-[0_4px_20px_rgba(30,185,101,0.3)] mt-2">
+                            {authMode === 'login' ? 'Enter Pitch' : 'Create Squad'}
+                        </button>
+                    </form>
+
+                    <div className="mt-6 text-center relative z-10">
+                        <button type="button" onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }} 
+                            className="text-sm font-medium text-neutral-500 hover:text-brand-400 transition-colors">
+                            {authMode === 'login' ? "Don't have an account? Sign up" : "Already playing? Log in"}
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -222,9 +340,17 @@ export default function Dashboard() {
                         <span className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full text-neutral-400">
                             <Calendar size={12} /> {stats.daysPassed} / {goal.totalDays} Days
                         </span>
+                        {currentUser && (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-neutral-500 ml-1">
+                                <UserIcon size={12} /> {currentUser}
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center gap-2 md:gap-4">
+                    <button onClick={handleLogout} className="text-red-500/70 hover:text-red-400 transition-colors bg-black border border-red-500/10 p-2 rounded-full flex items-center gap-1.5" title="Log Out">
+                        <LogOut size={14} />
+                    </button>
                     <button onClick={() => {
                         setTitle(goal.title);
                         setTotalQuestions(goal.totalQuestions);

@@ -7,9 +7,13 @@ exports.addProgress = async (req, res) => {
         const { date, questionsSolved, topics, notes } = req.body;
         const goalId = req.params.goalId;
 
-        // Check if goal exists
+        // Check if goal exists and belongs to user
         const goal = await Goal.findById(goalId);
         if (!goal) return res.status(404).json({ message: 'Goal not found' });
+        
+        if (goal.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
 
         // Normalize date to start of day
         const progressDate = new Date(date);
@@ -36,6 +40,14 @@ exports.addProgress = async (req, res) => {
 exports.getProgressHeatmap = async (req, res) => {
     try {
         const goalId = req.params.goalId;
+        
+        // Verify ownership
+        const goal = await Goal.findById(goalId);
+        if (!goal) return res.status(404).json({ message: 'Goal not found' });
+        if (goal.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
         const progressEntries = await Progress.find({ goalId }).sort({ date: 1 }).lean();
 
         // format into { date: 'YYYY-MM-DD', count: N } for react-calendar-heatmap
