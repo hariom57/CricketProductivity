@@ -1,15 +1,22 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-50: #eefdf3;
+  --color-brand-100: #d6fbe4;
+  --color-brand-200: #aef5ca;
+  --color-brand-300: #78eaab;
+  --color-brand-400: #3fd583;
+  --color-brand-500: #1eb965;
+  --color-brand-600: #12934e;
+  --color-brand-700: #127541;
+  --color-brand-800: #135d36;
+  --color-brand-900: #114c2e;
+  --color-brand-950: #082b19;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +27,36 @@
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
+  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* React Calendar Heatmap custom dark mode styles */
+.react-calendar-heatmap rect {
+  stroke: #171717;
+  stroke-width: 1px;
+}
+
+/* Base style for heatmap empty cells in dark mode */
+.react-calendar-heatmap .color-empty {
+  fill: #1a1a1a;
+}
+.react-calendar-heatmap .color-github-1 {
+  fill: var(--color-brand-900);
+}
+.react-calendar-heatmap .color-github-2 {
+  fill: var(--color-brand-700);
+}
+.react-calendar-heatmap .color-github-3 {
+  fill: var(--color-brand-500);
+}
+.react-calendar-heatmap .color-github-4 {
+  fill: var(--color-brand-300);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
