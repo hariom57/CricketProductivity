@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RunRate 🏏
 
-## Getting Started
+A beautiful, gamified Data Structures and Algorithms (DSA) tracker that brings the thrill of a cricket run chase to your coding journey! 
 
-First, run the development server:
+Whether you're preparing for big tech interviews (Google, Amazon, Microsoft) or just maintaining a daily coding habit, **RunRate** visualizes your progress using intuitive cricket metrics and striking visual activity maps.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+![RunRate Dashboard](https://via.placeholder.com/800x400?text=RunRate+Dashboard) *(Replace with actual screenshot)*
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🌟 Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Cricket Scoreboard Metrics**: Track your progress dynamically with "Runs" (Questions Solved), **Current Run Rate (CRR)**, and **Required Run Rate (RRR)**. Are you ahead of the required rate, or do you need to accelerate your solving speed?
+- **Consistency Map**: A dynamic, GitHub-style contribution calendar heatmap showing your daily activity strictly across the duration of your goal.
+- **Instant Innings Logging**: Quickly log your daily solved questions via a sleek, centered popup modal.
+- **Fully Responsive Architecture**: Meticulously designed to fit 100% of your screen height with **zero vertical scrolling needed**, whether you're using an ultra-wide desktop monitor, a tablet, or a mobile phone.
+- **Premium Dark Aesthetics**: Built with glassmorphism panels, deep blacks, and vibrant neon-green brand accents suitable for long coding nights.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 💻 Tech Stack
 
-## Learn More
+### Frontend
+- **Framework**: [Next.js](https://nextjs.org/) (App Router format) 
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components/Icons**: [Lucide React](https://lucide.dev/)
+- **Data Visualization**: `react-calendar-heatmap`
+- **Date Utility**: `date-fns`
 
-To learn more about Next.js, take a look at the following resources:
+### Backend
+- **Environment**: Node.js & Express
+- **Database**: MongoDB (via Mongoose)
+- **API**: RESTful endpoints for Goal Management and Progress Tracking
+- **Other**: CORS, dotenv
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Getting Started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerequisites
+- Node.js (v18+ recommended)
+- MongoDB instance (e.g., MongoDB Atlas)
 
-## Deploy on Vercel
+### Setup Instructions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Clone the repository:**
+   \`\`\`bash
+   git clone git@github.com:hariom57/CricketProductivity.git
+   cd CricketProductivity
+   \`\`\`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Backend Setup:**
+   \`\`\`bash
+   cd backend
+   npm install
+   \`\`\`
+   - Create a \`.env\` file in the `backend` directory.
+   - Add your variables:
+     \`\`\`env
+     PORT=5000
+     MONGODB_URI=your_mongodb_connection_string
+     \`\`\`
+   - Start the backend server:
+     \`\`\`bash
+     npm run dev
+     \`\`\`
+
+3. **Frontend Setup:**
+   \`\`\`bash
+   cd ../frontend
+   npm install
+   \`\`\`
+   - Start the frontend development server:
+     \`\`\`bash
+     npm run dev
+     \`\`\`
+
+4. **Play!**
+   - Open your browser and navigate to `http://localhost:3000`. Set your Target Runs (Questions) and Total Overs (Days), and start your chase!
+
+## 🛣️ Roadmap / Future Enhancements
+- [ ] Native mobile widget support.
+- [ ] LeetCode / Codeforces auto-sync integration.
+- [ ] Advanced trend graphs and topic-wise difficulty tracking.
+
+---
+*Built with passion to crack big tech.*
