@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X, LogOut, User as UserIcon } from 'lucide-react';
+import { TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X, LogOut, User as UserIcon } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -200,8 +200,8 @@ export default function Dashboard() {
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
 
                     <div className="text-center mb-8 relative z-10">
-                        <div className="w-16 h-16 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-500/20">
-                            <Target size={32} />
+                        <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-500/20 overflow-hidden">
+                            <img src="/Favicon1.jpg" alt="Logo" className="w-full h-full object-cover" />
                         </div>
                         <h2 className="text-3xl font-black tracking-tight mb-2">RunRate</h2>
                         <p className="text-neutral-400 text-sm">Join the match. Track your grind.</p>
@@ -252,7 +252,7 @@ export default function Dashboard() {
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
 
                     <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                        <Target className="text-brand-400" /> {isEditingGoal ? 'Edit Your Goal' : 'Set Your Target'}
+                        <img src="/Favicon1.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" /> {isEditingGoal ? 'Edit Your Goal' : 'Set Your Target'}
                     </h2>
                     <p className="text-neutral-400 mb-8">{isEditingGoal ? 'Adjust your target runs and overs.' : 'Start your run chase. Create a roadmap.'}</p>
 
@@ -335,7 +335,7 @@ export default function Dashboard() {
                     </h1>
                     <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm font-medium">
                         <span className="flex items-center gap-1 bg-brand-500/10 text-brand-400 px-2.5 py-1 rounded-full border border-brand-500/20">
-                            <Target size={12} /> Target: {goal.totalQuestions}
+                            <img src="/Favicon1.jpg" alt="Icon" className="w-3 h-3 rounded-full object-cover" /> Target: {goal.totalQuestions}
                         </span>
                         <span className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full text-neutral-400">
                             <Calendar size={12} /> {stats.daysPassed} / {goal.totalDays} Days

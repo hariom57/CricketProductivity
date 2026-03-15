@@ -4,6 +4,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'RunRate - DSA Cricket Chase',
   description: 'Track your DSA progress like a cricket run chase',
+  icons: {
+    icon: '/Favicon1.jpg',
+  },
 };
 
 export default function RootLayout({
