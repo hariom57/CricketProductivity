@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers } from 'lucide-react';
-import { addDays, format, subDays } from 'date-fns';
+import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit } from 'lucide-react';
+import { format, subDays, addDays } from 'date-fns';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -16,13 +16,13 @@ export default function Dashboard() {
     
     // Forms state
     const [showGoalForm, setShowGoalForm] = useState(false);
+    const [isEditingGoal, setIsEditingGoal] = useState(false);
     const [title, setTitle] = useState('DSA Grind');
     const [totalQuestions, setTotalQuestions] = useState(450);
     const [totalDays, setTotalDays] = useState(70);
     const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     
     const [questionsSolved, setQuestionsSolved] = useState(0);
-    const [topics, setTopics] = useState('');
 
     useEffect(() => {
         fetchGoals();
@@ -77,6 +77,25 @@ export default function Dashboard() {
         }
     };
 
+    const handleUpdateGoal = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!goal) return;
+        try {
+            setLoading(true);
+            await axios.put(`${API_URL}/goals/${goal._id}`, {
+                title,
+                totalQuestions,
+                totalDays,
+                startDate
+            });
+            setIsEditingGoal(false);
+            fetchGoalDetails(goal._id);
+        } catch (error) {
+            console.error("Error updating goal", error);
+            setLoading(false);
+        }
+    };
+
     const handleAddProgress = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!goal) return;
@@ -84,11 +103,9 @@ export default function Dashboard() {
             setLoading(true);
             await axios.post(`${API_URL}/progress/goals/${goal._id}`, {
                 date: new Date().toISOString(), // today
-                questionsSolved: Number(questionsSolved),
-                topics: topics.split(',').map(t => t.trim())
+                questionsSolved: Number(questionsSolved)
             });
             setQuestionsSolved(0);
-            setTopics('');
             fetchGoalDetails(goal._id);
         } catch (error) {
             console.error("Error adding progress", error);
@@ -106,7 +123,7 @@ export default function Dashboard() {
         );
     }
 
-    if (showGoalForm || !goal) {
+    if (showGoalForm || !goal || isEditingGoal) {
         return (
             <div className="min-h-screen bg-neutral-950 text-neutral-100 p-6 flex flex-col items-center justify-center">
                 <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative overflow-hidden">
@@ -114,11 +131,11 @@ export default function Dashboard() {
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
                     
                     <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                        <Target className="text-brand-400" /> Set Your Target
+                        <Target className="text-brand-400" /> {isEditingGoal ? 'Edit Your Goal' : 'Set Your Target'}
                     </h2>
-                    <p className="text-neutral-400 mb-8">Start your run chase. Create a roadmap.</p>
+                    <p className="text-neutral-400 mb-8">{isEditingGoal ? 'Adjust your target runs and overs.' : 'Start your run chase. Create a roadmap.'}</p>
                     
-                    <form onSubmit={handleCreateGoal} className="space-y-5 relative z-10">
+                    <form onSubmit={isEditingGoal ? handleUpdateGoal : handleCreateGoal} className="space-y-5 relative z-10">
                         <div>
                             <label className="block text-sm font-medium mb-1 text-neutral-300">Goal Title</label>
                             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required
@@ -141,10 +158,18 @@ export default function Dashboard() {
                             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required
                                 className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 transition-all text-neutral-200" style={{ colorScheme: 'dark' }} />
                         </div>
-                        <button type="submit" 
-                            className="w-full bg-brand-500 hover:bg-brand-400 text-black font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(30,185,101,0.3)] hover:shadow-[0_0_30px_rgba(63,213,131,0.5)] transform hover:-translate-y-1">
-                            Start Chase 🏏
-                        </button>
+                        <div className="flex gap-4">
+                            {isEditingGoal && (
+                                <button type="button" onClick={() => setIsEditingGoal(false)}
+                                    className="w-1/3 bg-neutral-800 hover:bg-neutral-700 text-white font-bold py-3.5 rounded-xl transition-all">
+                                    Cancel
+                                </button>
+                            )}
+                            <button type="submit" 
+                                className={`${isEditingGoal ? 'w-2/3' : 'w-full'} bg-brand-500 hover:bg-brand-400 text-black font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(30,185,101,0.3)] hover:shadow-[0_0_30px_rgba(63,213,131,0.5)] transform hover:-translate-y-1`}>
+                                {isEditingGoal ? 'Save Changes' : 'Start Chase 🏏'}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -168,6 +193,15 @@ export default function Dashboard() {
                         <span className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-neutral-400">
                             <Calendar size={14} /> {stats.daysPassed} / {goal.totalDays} Days
                         </span>
+                        <button onClick={() => {
+                            setTitle(goal.title);
+                            setTotalQuestions(goal.totalQuestions);
+                            setTotalDays(goal.totalDays);
+                            setStartDate(format(new Date(goal.startDate), 'yyyy-MM-dd'));
+                            setIsEditingGoal(true);
+                        }} className="text-neutral-500 hover:text-white transition-colors bg-neutral-900 border border-neutral-800 px-2 py-1 rounded-full flex items-center justify-center">
+                            <Edit size={14} />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -234,11 +268,6 @@ export default function Dashboard() {
                                 <input type="number" value={questionsSolved} onChange={(e) => setQuestionsSolved(Number(e.target.value))} min="0" required
                                     className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 font-bold text-lg transition-all" />
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium mb-1.5 text-neutral-400 uppercase tracking-wide">Topics (comma separated)</label>
-                                <input type="text" value={topics} onChange={(e) => setTopics(e.target.value)} placeholder="e.g. Arrays, Graph, DP"
-                                    className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500 transition-all" />
-                            </div>
                             <button type="submit" 
                                 className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_4px_14px_0_rgba(255,255,255,0.1)]">
                                 Save Innings
@@ -257,13 +286,13 @@ export default function Dashboard() {
                             </h3>
                         </div>
                         
-                        <div className="flex-grow flex items-center justify-center bg-black/30 rounded-2xl p-6 border border-white/5 w-full overflow-x-auto">
-                            <div className="min-w-[600px] w-full">
+                        <div className="flex-grow flex items-center justify-start bg-black/30 rounded-2xl p-6 border border-white/5 w-full overflow-x-auto">
+                            <div style={{ width: `${Math.max(200, Math.ceil(goal.totalDays / 7) * 16 + 50)}px`, minWidth: `${Math.max(200, Math.ceil(goal.totalDays / 7) * 16 + 50)}px` }} className="mx-auto flex-shrink-0">
                                 <CalendarHeatmap
-                                    startDate={subDays(new Date(), 100)}
-                                    endDate={addDays(new Date(), 10)}
+                                    startDate={subDays(new Date(goal.startDate), 1)}
+                                    endDate={addDays(new Date(goal.endDate), 1)}
                                     values={heatmapData}
-                                    classForValue={(value) => {
+                                    classForValue={(value: any) => {
                                         if (!value || value.count === 0) return 'color-empty';
                                         if (value.count < 3) return 'color-github-1';
                                         if (value.count < 5) return 'color-github-2';
