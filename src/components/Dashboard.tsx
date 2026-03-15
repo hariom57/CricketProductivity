@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
-import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit } from 'lucide-react';
+import { Target, TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
 
 const API_URL = 'http://localhost:5000/api';
@@ -13,15 +13,17 @@ export default function Dashboard() {
     const [goal, setGoal] = useState<any>(null);
     const [heatmapData, setHeatmapData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Forms state
     const [showGoalForm, setShowGoalForm] = useState(false);
     const [isEditingGoal, setIsEditingGoal] = useState(false);
+    const [showLogModal, setShowLogModal] = useState(false);
+
     const [title, setTitle] = useState('DSA Grind');
     const [totalQuestions, setTotalQuestions] = useState(450);
     const [totalDays, setTotalDays] = useState(70);
     const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-    
+
     const [questionsSolved, setQuestionsSolved] = useState(0);
 
     useEffect(() => {
@@ -106,6 +108,7 @@ export default function Dashboard() {
                 questionsSolved: Number(questionsSolved)
             });
             setQuestionsSolved(0);
+            setShowLogModal(false);
             fetchGoalDetails(goal._id);
         } catch (error) {
             console.error("Error adding progress", error);
@@ -129,12 +132,12 @@ export default function Dashboard() {
                 <div className="w-full max-w-md p-8 rounded-2xl glass-panel relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-400 rounded-full blur-[90px] opacity-20 pointer-events-none"></div>
-                    
+
                     <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
                         <Target className="text-brand-400" /> {isEditingGoal ? 'Edit Your Goal' : 'Set Your Target'}
                     </h2>
                     <p className="text-neutral-400 mb-8">{isEditingGoal ? 'Adjust your target runs and overs.' : 'Start your run chase. Create a roadmap.'}</p>
-                    
+
                     <form onSubmit={isEditingGoal ? handleUpdateGoal : handleCreateGoal} className="space-y-5 relative z-10">
                         <div>
                             <label className="block text-sm font-medium mb-1 text-neutral-300">Goal Title</label>
@@ -143,7 +146,7 @@ export default function Dashboard() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1 text-neutral-300">Target Runs (Questions)</label>
+                                <label className="block text-sm font-medium mb-1 text-neutral-300">Target Runs</label>
                                 <input type="number" value={totalQuestions} onChange={(e) => setTotalQuestions(Number(e.target.value))} required
                                     className="w-full bg-black/50 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 transition-all" />
                             </div>
@@ -165,7 +168,7 @@ export default function Dashboard() {
                                     Cancel
                                 </button>
                             )}
-                            <button type="submit" 
+                            <button type="submit"
                                 className={`${isEditingGoal ? 'w-2/3' : 'w-full'} bg-brand-500 hover:bg-brand-400 text-black font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(30,185,101,0.3)] hover:shadow-[0_0_30px_rgba(63,213,131,0.5)] transform hover:-translate-y-1`}>
                                 {isEditingGoal ? 'Save Changes' : 'Start Chase 🏏'}
                             </button>
@@ -179,148 +182,161 @@ export default function Dashboard() {
     const { stats } = goal;
 
     return (
-        <div className="min-h-screen bg-[#050505] text-neutral-100 p-4 md:p-8 pb-20 font-sans selection:bg-brand-500 selection:text-black">
-            {/* Header Section */}
-            <div className="max-w-5xl mx-auto mb-8 flex justify-between items-end">
-                <div>
-                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent">
-                        {goal.title}
-                    </h1>
-                    <div className="flex items-center gap-4 text-sm font-medium">
-                        <span className="flex items-center gap-1.5 bg-brand-500/10 text-brand-400 px-3 py-1 rounded-full border border-brand-500/20">
-                            <Target size={14} /> Target: {goal.totalQuestions}
-                        </span>
-                        <span className="flex items-center gap-1.5 bg-neutral-900 border border-neutral-800 px-3 py-1 rounded-full text-neutral-400">
-                            <Calendar size={14} /> {stats.daysPassed} / {goal.totalDays} Days
-                        </span>
-                        <button onClick={() => {
-                            setTitle(goal.title);
-                            setTotalQuestions(goal.totalQuestions);
-                            setTotalDays(goal.totalDays);
-                            setStartDate(format(new Date(goal.startDate), 'yyyy-MM-dd'));
-                            setIsEditingGoal(true);
-                        }} className="text-neutral-500 hover:text-white transition-colors bg-neutral-900 border border-neutral-800 px-2 py-1 rounded-full flex items-center justify-center">
-                            <Edit size={14} />
+        <div className="h-screen flex flex-col bg-[#050505] text-neutral-100 p-4 md:p-6 font-sans selection:bg-brand-500 selection:text-black overflow-hidden relative">
+
+            {/* Log Score Modal */}
+            {showLogModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="glass-panel w-full max-w-sm p-6 rounded-3xl relative animate-in fade-in zoom-in duration-200">
+                        <button onClick={() => setShowLogModal(false)} className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors bg-black/40 p-1.5 rounded-full">
+                            <X size={16} />
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column - Scoreboard & Form */}
-                <div className="lg:col-span-1 flex flex-col gap-6">
-                    {/* Cricket Scoreboard Widget */}
-                    <div className="glass-panel p-6 rounded-3xl relative overflow-hidden group">
-                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-500/20 blur-3xl rounded-full transition-all group-hover:bg-brand-400/30"></div>
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                            <Zap className="text-brand-400" size={24} fill="currentColor" /> Live Score
+                            <Plus className="text-brand-400" size={24} /> Log Today
                         </h3>
-                        
-                        <div className="flex justify-between items-end mb-8 border-b border-white/5 pb-6">
+                        <form onSubmit={handleAddProgress} className="space-y-6">
                             <div>
-                                <p className="text-neutral-500 text-sm font-medium mb-1 uppercase tracking-wider">Score</p>
-                                <div className="text-5xl font-black">
-                                    {stats.totalSolved}<span className="text-neutral-600 text-3xl">/</span><span className="text-neutral-400 text-3xl">{goal.totalQuestions}</span>
-                                </div>
+                                <label className="block text-xs font-medium mb-2 text-neutral-400 uppercase tracking-wide">Questions Solved</label>
+                                <input type="number" value={questionsSolved} onChange={(e) => setQuestionsSolved(Number(e.target.value))} min="0" required autoFocus
+                                    className="w-full bg-black/50 border border-neutral-700 rounded-xl px-5 py-4 focus:outline-none focus:border-brand-500 font-bold text-2xl text-center transition-all shadow-inner" />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-black/40 rounded-2xl p-4 border border-white/5">
-                                <p className="text-neutral-500 text-xs font-semibold mb-1 uppercase tracking-wider">Current RR</p>
-                                <p className="text-2xl font-bold text-white flex items-center gap-2">
-                                    {stats.crr}
-                                    {Number(stats.crr) >= Number(stats.rrr) ? 
-                                        <TrendingUp size={16} className="text-brand-400" /> : 
-                                        <TrendingUp size={16} className="text-red-400 rotate-180" />}
-                                </p>
-                            </div>
-                            <div className="bg-black/40 rounded-2xl p-4 border border-white/5">
-                                <p className="text-neutral-500 text-xs font-semibold mb-1 uppercase tracking-wider">Required RR</p>
-                                <p className="text-2xl font-bold text-white flex items-center gap-2">
-                                    {stats.rrr}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-6">
-                            <div className="flex justify-between text-xs font-medium text-neutral-400 mb-2">
-                                <span>Progress</span>
-                                <span>{Math.round((stats.totalSolved / goal.totalQuestions) * 100)}%</span>
-                            </div>
-                            <div className="h-2 w-full bg-neutral-900 rounded-full overflow-hidden">
-                                <div 
-                                    className="h-full bg-brand-500 rounded-full shadow-[0_0_10px_rgba(30,185,101,0.5)] transition-all duration-1000"
-                                    style={{ width: `${Math.min(100, (stats.totalSolved / goal.totalQuestions) * 100)}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Add Progress Widget */}
-                    <div className="glass-panel p-6 rounded-3xl">
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                            <Plus className="text-brand-400" size={20} /> Log Today
-                        </h3>
-                        <form onSubmit={handleAddProgress} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium mb-1.5 text-neutral-400 uppercase tracking-wide">Questions Solved</label>
-                                <input type="number" value={questionsSolved} onChange={(e) => setQuestionsSolved(Number(e.target.value))} min="0" required
-                                    className="w-full bg-black/40 border border-neutral-800 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-500 font-bold text-lg transition-all" />
-                            </div>
-                            <button type="submit" 
-                                className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_4px_14px_0_rgba(255,255,255,0.1)]">
+                            <button type="submit"
+                                className="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(30,185,101,0.4)]">
                                 Save Innings
                             </button>
                         </form>
                     </div>
                 </div>
+            )}
 
-                {/* Right Column - Map & Graph */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
-                    {/* Heatmap Widget */}
-                    <div className="glass-panel p-6 rounded-3xl h-full flex flex-col">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <Layers className="text-brand-400" size={20} /> Consistency Map
-                            </h3>
-                        </div>
-                        
-                        <div className="flex-grow flex items-center justify-start bg-black/30 rounded-2xl p-6 border border-white/5 w-full overflow-x-auto">
-                            <div style={{ width: `${Math.max(200, Math.ceil(goal.totalDays / 7) * 16 + 50)}px`, minWidth: `${Math.max(200, Math.ceil(goal.totalDays / 7) * 16 + 50)}px` }} className="mx-auto flex-shrink-0">
-                                <CalendarHeatmap
-                                    startDate={subDays(new Date(goal.startDate), 1)}
-                                    endDate={addDays(new Date(goal.endDate), 1)}
-                                    values={heatmapData}
-                                    classForValue={(value: any) => {
-                                        if (!value || value.count === 0) return 'color-empty';
-                                        if (value.count < 3) return 'color-github-1';
-                                        if (value.count < 5) return 'color-github-2';
-                                        if (value.count < 8) return 'color-github-3';
-                                        return 'color-github-4';
-                                    }}
-                                    tooltipDataAttrs={(value: any) => {
-                                        if(!value || !value.date) return { 'data-tooltip': '' };
-                                        return {
-                                            'data-tooltip': `${value.count} questions on ${value.date}`,
-                                        };
-                                    }}
-                                    showWeekdayLabels={true}
-                                />
+            {/* Header Section */}
+            <div className="max-w-6xl w-full mx-auto mb-4 flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-1 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent">
+                        {goal.title}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm font-medium">
+                        <span className="flex items-center gap-1 bg-brand-500/10 text-brand-400 px-2.5 py-1 rounded-full border border-brand-500/20">
+                            <Target size={12} /> Target: {goal.totalQuestions}
+                        </span>
+                        <span className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full text-neutral-400">
+                            <Calendar size={12} /> {stats.daysPassed} / {goal.totalDays} Days
+                        </span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 md:gap-4">
+                    <button onClick={() => {
+                        setTitle(goal.title);
+                        setTotalQuestions(goal.totalQuestions);
+                        setTotalDays(goal.totalDays);
+                        setStartDate(format(new Date(goal.startDate), 'yyyy-MM-dd'));
+                        setIsEditingGoal(true);
+                    }} className="text-neutral-500 hover:text-white transition-colors bg-neutral-900 border border-neutral-800 p-2 md:px-3 rounded-full flex items-center gap-1.5" title="Edit Goal">
+                        <Edit size={14} /> <span className="hidden md:inline text-xs font-semibold">Settings</span>
+                    </button>
+                    <button onClick={() => setShowLogModal(true)}
+                        className="bg-brand-500 hover:bg-brand-400 text-black px-3 md:px-5 py-2 rounded-full font-bold text-xs md:text-sm transition-all shadow-[0_0_15px_rgba(30,185,101,0.4)] flex items-center gap-1.5 transform hover:-translate-y-0.5">
+                        <Plus size={16} /> Log Score
+                    </button>
+                </div>
+            </div>
+
+            <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col gap-4 min-h-0">
+
+                {/* SECTION 1: Cricket Scoreboard Widget */}
+                <div className="glass-panel px-5 md:px-6 py-4 md:py-5 rounded-3xl relative overflow-hidden flex-shrink-0 border border-white/5">
+                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-500/10 blur-3xl rounded-full transition-all pointer-events-none"></div>
+
+                    <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-5 flex items-center gap-2">
+                        <Zap className="text-brand-400" size={20} fill="currentColor" /> Live Score
+                    </h3>
+
+                    <div className="grid grid-cols-3 flex-nowrap gap-2 md:gap-6 mb-4 md:mb-6">
+                        {/* Score */}
+                        <div className="bg-black/50 rounded-2xl p-3 md:p-4 border border-white/5 flex flex-col justify-center">
+                            <p className="text-neutral-500 text-[10px] md:text-xs font-semibold mb-1 uppercase tracking-wider truncate">Score</p>
+                            <div className="text-xl md:text-4xl font-black flex items-baseline">
+                                {stats.totalSolved}<span className="text-neutral-600 text-sm md:text-2xl mx-1">/</span><span className="text-neutral-400 text-sm md:text-2xl">{goal.totalQuestions}</span>
                             </div>
                         </div>
-                        
-                        <div className="mt-4 flex justify-end items-center gap-2 text-xs text-neutral-500 font-medium">
-                            <span>Less</span>
-                            <div className="w-3 h-3 rounded-sm bg-[#1a1a1a]"></div>
-                            <div className="w-3 h-3 rounded-sm bg-brand-900"></div>
-                            <div className="w-3 h-3 rounded-sm bg-brand-700"></div>
-                            <div className="w-3 h-3 rounded-sm bg-brand-500"></div>
-                            <div className="w-3 h-3 rounded-sm bg-brand-300"></div>
-                            <span>More</span>
+
+                        {/* CRR */}
+                        <div className="bg-black/50 rounded-2xl p-3 md:p-4 border border-white/5 flex flex-col justify-center">
+                            <p className="text-neutral-500 text-[10px] md:text-xs font-semibold mb-1 uppercase tracking-wider truncate">Curr RR</p>
+                            <p className="text-xl md:text-3xl font-bold text-white flex items-center gap-1 md:gap-2">
+                                {stats.crr}
+                                {Number(stats.crr) >= Number(stats.rrr) ?
+                                    <TrendingUp size={16} className="text-brand-400 flex-shrink-0" /> :
+                                    <TrendingUp size={16} className="text-red-400 rotate-180 flex-shrink-0" />}
+                            </p>
+                        </div>
+
+                        {/* RRR */}
+                        <div className="bg-black/50 rounded-2xl p-3 md:p-4 border border-white/5 flex flex-col justify-center">
+                            <p className="text-neutral-500 text-[10px] md:text-xs font-semibold mb-1 uppercase tracking-wider truncate">Req RR</p>
+                            <p className="text-xl md:text-3xl font-bold text-white flex items-center gap-1 md:gap-2">
+                                {stats.rrr}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="flex justify-between text-[10px] md:text-xs font-medium text-neutral-400 mb-1.5 md:mb-2">
+                            <span>Journey Progress</span>
+                            <span>{Math.round((stats.totalSolved / goal.totalQuestions) * 100)}%</span>
+                        </div>
+                        <div className="h-1.5 md:h-2 w-full bg-neutral-900 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-brand-500 rounded-full shadow-[0_0_10px_rgba(30,185,101,0.5)] transition-all duration-1000"
+                                style={{ width: `${Math.min(100, (stats.totalSolved / goal.totalQuestions) * 100)}%` }}
+                            ></div>
                         </div>
                     </div>
                 </div>
+
+                {/* SECTION 2: Heatmap Widget */}
+                <div className="glass-panel p-5 md:p-6 rounded-3xl flex flex-col flex-1 min-h-0 border border-white/5">
+                    <div className="flex justify-between items-center mb-4 flex-shrink-0">
+                        <h3 className="text-md md:text-lg font-bold flex items-center gap-2">
+                            <Layers className="text-brand-400" size={18} /> Consistency Map
+                        </h3>
+                    </div>
+
+                    <div className="flex-grow flex justify-start bg-black/40 rounded-2xl p-4 md:p-6 border border-white/5 w-full overflow-x-auto overflow-y-hidden custom-scrollbar">
+                        <div className="h-full mx-auto flex-shrink-0 flex items-center min-w-min" style={{ height: '100%', minHeight: '120px' }}>
+                            <CalendarHeatmap
+                                startDate={subDays(new Date(goal.startDate), 1)}
+                                endDate={addDays(new Date(goal.endDate), 1)}
+                                values={heatmapData}
+                                classForValue={(value: any) => {
+                                    if (!value || value.count === 0) return 'color-empty';
+                                    if (value.count < 3) return 'color-github-1';
+                                    if (value.count < 5) return 'color-github-2';
+                                    if (value.count < 8) return 'color-github-3';
+                                    return 'color-github-4';
+                                }}
+                                tooltipDataAttrs={(value: any) => {
+                                    if (!value || !value.date) return { 'data-tooltip': '' };
+                                    return {
+                                        'data-tooltip': `${value.count} questions on ${value.date}`,
+                                    };
+                                }}
+                                showWeekdayLabels={true}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mt-3 md:mt-4 flex justify-end items-center gap-1 md:gap-2 text-[10px] md:text-xs text-neutral-500 font-medium flex-shrink-0">
+                        <span>Less</span>
+                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-[#1a1a1a]"></div>
+                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-brand-900"></div>
+                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-brand-700"></div>
+                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-brand-500"></div>
+                        <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-brand-300"></div>
+                        <span>More</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     );

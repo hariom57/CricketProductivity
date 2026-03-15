@@ -42,15 +42,19 @@ body {
 .react-calendar-heatmap .color-empty {
   fill: #1a1a1a;
 }
+
 .react-calendar-heatmap .color-github-1 {
   fill: var(--color-brand-900);
 }
+
 .react-calendar-heatmap .color-github-2 {
   fill: var(--color-brand-700);
 }
+
 .react-calendar-heatmap .color-github-3 {
   fill: var(--color-brand-500);
 }
+
 .react-calendar-heatmap .color-github-4 {
   fill: var(--color-brand-300);
 }
@@ -59,4 +63,10 @@ body {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.react-calendar-heatmap {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
 }
