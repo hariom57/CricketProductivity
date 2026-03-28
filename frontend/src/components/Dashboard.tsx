@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
 import { TrendingUp, Calendar, Zap, Plus, RefreshCw, Layers, Edit, X, LogOut, User as UserIcon } from 'lucide-react';
 import { format, subDays, addDays } from 'date-fns';
 
@@ -454,13 +456,17 @@ export default function Dashboard() {
                                     return 'color-github-4';
                                 }}
                                 tooltipDataAttrs={(value: any) => {
-                                    if (!value || !value.date) return { 'data-tooltip': '' };
+                                    if (!value || !value.date) {
+                                        return { 'data-tooltip-id': 'heatmap-tooltip', 'data-tooltip-content': '0 questions' };
+                                    }
                                     return {
-                                        'data-tooltip': `${value.count} questions on ${value.date}`,
+                                        'data-tooltip-id': 'heatmap-tooltip',
+                                        'data-tooltip-content': `${value.count} questions on ${format(new Date(value.date), 'MMM d, yyyy')}`,
                                     };
                                 }}
                                 showWeekdayLabels={true}
                             />
+                            <Tooltip id="heatmap-tooltip" style={{ backgroundColor: '#1a1a1a', color: '#fff', borderRadius: '6px', fontSize: '12px', padding: '6px 10px', border: '1px solid rgba(255,255,255,0.1)', zIndex: 100 }} />
                         </div>
                     </div>
 
