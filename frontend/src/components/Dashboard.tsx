@@ -34,6 +34,7 @@ export default function Dashboard() {
     const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
     const [questionsSolved, setQuestionsSolved] = useState(0);
+    const [logDate, setLogDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
     // Auth state
     const [token, setToken] = useState<string | null>(null);
@@ -132,10 +133,11 @@ export default function Dashboard() {
         try {
             setLoading(true);
             await axios.post(`${API_URL}/progress/goals/${goal._id}`, {
-                date: new Date().toISOString(), // today
+                date: logDate,
                 questionsSolved: Number(questionsSolved)
             });
             setQuestionsSolved(0);
+            setLogDate(format(new Date(), 'yyyy-MM-dd'));
             setShowLogModal(false);
             fetchGoalDetails(goal._id);
         } catch (error) {
@@ -313,10 +315,17 @@ export default function Dashboard() {
                             <Plus className="text-brand-400" size={24} /> Log Today
                         </h3>
                         <form onSubmit={handleAddProgress} className="space-y-6">
-                            <div>
-                                <label className="block text-xs font-medium mb-2 text-neutral-400 uppercase tracking-wide">Questions Solved</label>
-                                <input type="number" value={questionsSolved} onChange={(e) => setQuestionsSolved(Number(e.target.value))} min="0" required autoFocus
-                                    className="w-full bg-black/50 border border-neutral-700 rounded-xl px-5 py-4 focus:outline-none focus:border-brand-500 font-bold text-2xl text-center transition-all shadow-inner" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium mb-2 text-neutral-400 uppercase tracking-wide text-center">Date</label>
+                                    <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} required max={format(new Date(), 'yyyy-MM-dd')}
+                                        className="w-full bg-black/50 border border-neutral-700 rounded-xl px-4 py-4 focus:outline-none focus:border-brand-500 font-bold text-sm text-center transition-all shadow-inner text-neutral-200" style={{ colorScheme: 'dark' }} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium mb-2 text-neutral-400 uppercase tracking-wide text-center">Score</label>
+                                    <input type="number" value={questionsSolved} onChange={(e) => setQuestionsSolved(Number(e.target.value))} min="0" required autoFocus
+                                        className="w-full bg-black/50 border border-neutral-700 rounded-xl px-5 py-4 focus:outline-none focus:border-brand-500 font-bold text-2xl text-center transition-all shadow-inner" />
+                                </div>
                             </div>
                             <button type="submit"
                                 className="w-full bg-brand-500 hover:bg-brand-400 text-black font-extrabold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(30,185,101,0.4)]">
